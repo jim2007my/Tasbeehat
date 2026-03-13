@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <!-- PWA Configuration -->
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#fcf9f4">
+<link rel="apple-touch-icon" href="icons/icon-384x384.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تسبيحات - إذاعة القرآن الكريم</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-128x128.png">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* الأنماط الأساسية الموحدة */
+        :root {
+            --primary: #b78c4a;        
+            --primary-dark: #8b5e2c;
+            --primary-light: #f5e6d3;
+            --bg-main: #fcf9f4;         
+            --surface: #ffffff;
+            --text-main: #2c3e4e;
+            --text-muted: #6b7a88;
+            --border-light: #e9e1d4;
+            --shadow-sm: 0 10px 25px -5px rgba(0,0,0,0.03), 0 8px 10px -6px rgba(0,0,0,0.02);
+            --shadow-md: 0 20px 35px -8px rgba(0,0,0,0.04), 0 10px 15px -6px rgba(0,0,0,0.02);
+            --shadow-lg: 0 25px 50px -12px rgba(0,0,0,0.08);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; /* هذا هو الجزء الذي ستضيفه */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none; }
+        body { background-color: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
+        
+        /* القائمة الجانبية */
+        .sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; right: 0; top: 0; background: var(--surface); border-left: 1px solid var(--border-light); box-shadow: -5px 0 30px rgba(0,0,0,0.02); z-index: 2000; transition: var(--transition); display: flex; flex-direction: column; backdrop-filter: blur(10px); }
+        .sidebar-header { padding: 0px 20px; text-align: center; border-bottom: 1px solid #e9e1d400; }
+        .sidebar-logo { font-size: 2.2rem; color: var(--primary); display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Amiri Quran', serif; font-weight: 700; }
+        .sidebar-nav { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .nav-item { padding: 14px 5px; border-radius: 16px; cursor: pointer; display: flex; align-items: center; gap: 15px; font-size: 1.1rem; font-weight: 600; color: var(--text-muted); transition: var(--transition); border: 1px solid transparent; text-decoration: none; }
+        .nav-item:hover { background: var(--primary-light); color: var(--primary-dark); border-color: rgba(139, 94, 44, 0.15); transform: translateX(-5px); }
+        .nav-item.active { background: linear-gradient(135deg, var(--primary-light), #fef9f0); color: var(--primary-dark); border-color: rgba(184, 134, 11, 0.2); font-weight: 700; box-shadow: var(--shadow-sm); }
+        .nav-item i { font-size: 1.3rem; width: 30px; text-align: center; }
+        
+        /* المحتوى الرئيسي للراديو */
+        .main-content { margin-right: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; align-items: center; transition: var(--transition); min-height: 100vh; }
+        .mobile-header { display: none; width: 100%; padding: 15px 20px; align-items: center; justify-content: space-between; background: var(--bg-main); position: sticky; top: 0; z-index: 1500; border-bottom: 1px solid #e9e1d400; }
+        .menu-toggle { background: var(--surface); border: 1px solid var(--border-light); font-size: 1.4rem; color: var(--text-main); cursor: pointer; width: 45px; height: 45px; border-radius: 14px; display: flex; align-items: center; justify-content: center; transition: var(--transition); box-shadow: var(--shadow-sm); }
+        .menu-toggle:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+        .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(3px); z-index: 1900; opacity: 0; visibility: hidden; transition: var(--transition); }
+        .overlay.open { opacity: 1; visibility: visible; }
+        
+        .view-section { display: flex; width: 100%; max-width: 800px; padding: 40px 25px; flex-direction: column; align-items: center; flex: 1; animation: fadeSlide 0.4s ease; justify-content: center; }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* تصميم مشغل الراديو */
+        .radio-wrapper { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; }
+        .radio-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); width: 100%; border-radius: 30px; padding: 40px 20px; text-align: center; border: 1px solid rgba(184, 134, 11, 0.15); box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+        
+        .live-badge { position: absolute; top: 20px; right: 20px; background: rgba(220, 38, 38, 0.1); color: #dc2626; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(220, 38, 38, 0.2); }
+        .pulse-dot { width: 8px; height: 8px; background: #dc2626; border-radius: 50%; animation: pulseRed 1.5s infinite; }
+        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
+        
+        .radio-icon { font-size: 5rem; color: var(--primary); margin-bottom: 25px; margin-top: 15px; text-shadow: 0 10px 20px rgba(184, 134, 11, 0.2); display: block; }
+        
+        .radio-title { font-size: 2.2rem; font-family: 'Amiri Quran', serif; color: var(--primary-dark); margin-bottom: 5px; line-height: 1.3; }
+        .radio-subtitle { color: var(--text-muted); font-size: 1.1rem; font-weight: 600; margin-bottom: 30px; }
+        
+        /* الرسوم المتحركة للصوت */
+        .visualizer { display: flex; justify-content: center; align-items: flex-end; gap: 6px; height: 40px; margin-bottom: 35px; opacity: 0; transition: opacity 0.3s; }
+        .visualizer.active { opacity: 1; }
+        .bar { width: 6px; background: var(--primary); border-radius: 3px; height: 10px; }
+        .visualizer.active .bar { animation: soundBar 0.8s infinite alternate ease-in-out; }
+        .visualizer .bar:nth-child(1) { animation-delay: 0.1s; }
+        .visualizer .bar:nth-child(2) { animation-delay: 0.4s; }
+        .visualizer .bar:nth-child(3) { animation-delay: 0.0s; }
+        .visualizer .bar:nth-child(4) { animation-delay: 0.5s; }
+        .visualizer .bar:nth-child(5) { animation-delay: 0.2s; }
+        @keyframes soundBar { 0% { height: 10px; } 100% { height: 40px; } }
+
+        /* أزرار التحكم */
+        .play-btn { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; font-size: 2.2rem; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 15px 30px -10px rgba(139, 94, 44, 0.5); transition: var(--transition); border: 4px solid rgba(255,255,255,0.5); }
+        .play-btn:hover { transform: scale(1.05); box-shadow: 0 20px 40px -10px rgba(139, 94, 44, 0.6); }
+        .play-btn:active { transform: scale(0.95); }
+        
+        .volume-control { display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 40px; color: var(--text-muted); padding: 0 10px; }
+        .volume-control input[type=range] { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; background: var(--border-light); border-radius: 5px; outline: none; direction: ltr; }
+        .volume-control input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; transition: 0.2s; }
+        .volume-control input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        
+        /* تجاوب الشاشات */
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(100%); box-shadow: -10px 0 40px rgba(0,0,0,0.1); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-right: 0; }
+            .mobile-header { display: flex; }
+            .view-section { padding: 25px 15px; }
+            .radio-title { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+    
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo"><i class="fa-solid fa-bahai"></i> تسبيحات</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-fingerprint"></i> المُسَبِّحَة</a>
+            <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
+            <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-open"></i> المصحف الشريف</a>
+            <a href="radio.html" class="nav-item active"><i class="fa-solid fa-radio"></i> إذاعة القرآن الكريم</a>
+            <a href="prayer.html" class="nav-item"><i class="fa-solid fa-mosque"></i> مواقيت الصلاة</a>
+            <a href="about.html" class="nav-item"><i class="fa-solid fa-circle-info"></i> من نحن</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="mobile-header">
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--primary-dark);">إذاعة القرآن الكريم</h2>
+            <button class="menu-toggle" onclick="toggleMenu()"><i class="fa-solid fa-bars-staggered"></i></button>
+        </div>
+
+        <section class="view-section">
+            <div class="radio-wrapper">
+                <div class="radio-card">
+                    <div class="live-badge"><span class="pulse-dot"></span> بث مباشر</div>
+                    <i class="fa-solid fa-broadcast-tower radio-icon"></i>
+                    
+                    <h2 class="radio-title">إذاعة القرآن الكريم</h2>
+                    <p class="radio-subtitle">من القاهرة</p>
+
+                    <audio id="quran-stream" preload="none">
+                        <source src="https://n06.radiojar.com/8s5u5tpdtwzuv" type="audio/mpeg">
+                        متصفحك لا يدعم مشغل الصوت.
+                    </audio>
+
+                    <div class="visualizer" id="visualizer">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+
+                    <div class="controls">
+                        <button class="play-btn" id="playBtn" onclick="togglePlay()" title="تشغيل / إيقاف">
+                            <i class="fa-solid fa-play" id="playIcon"></i>
+                        </button>
+                    </div>
+
+                    <!--<div class="volume-control">
+                        <i class="fa-solid fa-volume-high"></i>
+                        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.8" oninput="changeVolume(this.value)">
+                        <i class="fa-solid fa-volume-low"></i>
+                    </div>-->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // إظهار/إخفاء القائمة في الموبايل
+        function toggleMenu() { 
+            document.getElementById('sidebar').classList.toggle('open'); 
+            document.getElementById('overlay').classList.toggle('open'); 
+        }
+
+        // متغيرات مشغل الراديو
+        const audio = document.getElementById('quran-stream');
+        const playIcon = document.getElementById('playIcon');
+        const visualizer = document.getElementById('visualizer');
+        const playBtn = document.getElementById('playBtn');
+
+        // دالة تشغيل وإيقاف الراديو
+        function togglePlay() {
+            if (audio.paused) {
+                // محاولة التشغيل مع إظهار حالة التحميل مؤقتاً
+                playIcon.className = 'fa-solid fa-spinner fa-spin';
+                
+                audio.play().then(() => {
+                    playIcon.className = 'fa-solid fa-pause';
+                    visualizer.classList.add('active');
+                }).catch(error => {
+                    console.error("خطأ في تشغيل البث:", error);
+                    playIcon.className = 'fa-solid fa-play';
+                    alert("عذراً، هناك مشكلة في الاتصال بخادم البث. يرجى المحاولة لاحقاً.");
+                });
+            } else {
+                audio.pause();
+                playIcon.className = 'fa-solid fa-play';
+                visualizer.classList.remove('active');
+            }
+        }
+
+        // دالة تغيير مستوى الصوت
+        function changeVolume(val) {
+            audio.volume = val;
+        }
+
+        // إيقاف الراديو عند حدوث خطأ مفاجئ في الشبكة
+        audio.addEventListener('error', function() {
+            playIcon.className = 'fa-solid fa-play';
+            visualizer.classList.remove('active');
+        });
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => console.log('Service Worker registered'))
+        .catch(err => console.log('Service Worker registration failed'));
+    });
+  }
+
+  // ... الكود الموجود لديك ...
+
+// دالة للتحقق من الوقت وإعادة تحميل الصفحة عند الساعة 12 مساءً (ظهراً)
+function scheduleResetAtNoon() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds();
+
+    // حساب الوقت المتبقي حتى الساعة 12:00:00 من اليوم الحالي أو اليوم التالي
+    const targetHour = 12; // 12 مساءً (ظهراً)
+    const targetMinutes = 0;
+    const targetSeconds = 0;
+
+    // إنشاء كائن تاريخ للوقت المستهدف اليوم
+    let targetTimeToday = new Date(now);
+    targetTimeToday.setHours(targetHour, targetMinutes, targetSeconds, 0);
+
+    // حساب الفرق بالمللي ثانية
+    let timeUntilReset = targetTimeToday - now;
+
+    // إذا كان الوقت الحالي قد تجاوز الساعة 12 ظهراً اليوم، نحدد موعد الغد
+    if (timeUntilReset < 0) {
+        targetTimeToday.setDate(targetTimeToday.getDate() + 1); // نذهب إلى الغد
+        timeUntilReset = targetTimeToday - now;
+    }
+
+    console.log(`سيتم إعادة التعيين بعد ${Math.round(timeUntilReset / 1000 / 60)} دقيقة.`);
+
+    // ضبط مؤقت لتنفيذ إعادة التحميل عند الوقت المحدد
+    setTimeout(() => {
+        console.log('⌛ جارٍ إعادة التعيين إلى الإعدادات الافتراضية (الساعة 12 ظهراً)...');
+        // يمكنك هنا إما إعادة تحميل الصفحة بالكامل،
+        // أو إعادة تعيين حالة المتغيرات كما تفضل.
+        
+        // الخيار 1: إعادة تحميل الصفحة بالكامل (الأكثر شيوعاً لـ "إعادة التعيين")
+        window.location.reload(true); // true لفرض التحميل من الخادم وليس الكاش
+        
+        // الخيار 2: (إذا كنت تقصد إعادة ضبط حالة مشغل الراديو فقط)
+        // audio.pause();
+        // audio.currentTime = 0;
+        // playIcon.className = 'fa-solid fa-play';
+        // visualizer.classList.remove('active');
+        // alert("تم إعادة تعيين المشغل عند الساعة 12 ظهراً.");
+        
+    }, timeUntilReset);
+}
+
+// تنفيذ الدالة عند تحميل الصفحة لبدء المراقبة
+scheduleResetAtNoon();
+
+// ملاحظة: بما أن الصفحة قد لا تبقى مفتوحة لأيام طويلة،
+// هذا الكود مناسب تماماً لإعادة التعيين اليومي أثناء استخدام المستخدم للتطبيق.
+
+    </script>
+</body>
+</html>

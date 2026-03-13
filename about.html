@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>من نحن - تسبيحات</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-48x48.png">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#fcf9f4">
+    <link rel="apple-touch-icon" href="/icons/icon-384x384.png">
+    <style>
+        :root {
+            --primary: #b78c4a;        
+            --primary-dark: #8b5e2c;
+            --primary-light: #f5e6d3;
+            --bg-main: #fcf9f4;         
+            --surface: #ffffff;
+            --surface-glass: rgba(255, 255, 255, 0.75);
+            --text-main: #2c3e4e;
+            --text-muted: #6b7a88;
+            --border-light: rgba(184, 134, 11, 0.15);
+            --shadow-sm: 0 10px 25px -5px rgba(0,0,0,0.03), 0 8px 10px -6px rgba(0,0,0,0.02);
+            --shadow-md: 0 20px 40px -8px rgba(184, 134, 11, 0.08);
+            --shadow-hover: 0 25px 50px -12px rgba(184, 134, 11, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; /* هذا هو الجزء الذي ستضيفه */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none; }
+        body { background-color: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* القائمة الجانبية (ثابتة في كل الصفحات) */
+        .sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; right: 0; top: 0; background: var(--surface); border-left: 1px solid var(--border-light); box-shadow: -5px 0 30px rgba(0,0,0,0.02); z-index: 2000; transition: var(--transition); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 0px 20px; text-align: center; border-bottom: 1px solid #e9e1d400; }
+        .sidebar-logo { font-size: 2.2rem; color: var(--primary); display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Amiri Quran', serif; font-weight: 700; }
+        .sidebar-nav { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .nav-item { padding: 14px 18px; border-radius: 16px; cursor: pointer; display: flex; align-items: center; gap: 15px; font-size: 1.1rem; font-weight: 600; color: var(--text-muted); transition: var(--transition); text-decoration: none; border: 1px solid transparent; }
+        .nav-item:hover { background: var(--primary-light); color: var(--primary-dark); transform: translateX(-5px); }
+        .nav-item.active { background: linear-gradient(135deg, var(--primary-light), #fef9f0); color: var(--primary-dark); border-color: rgba(184, 134, 11, 0.2); font-weight: 700; box-shadow: var(--shadow-sm); }
+        .nav-item i { font-size: 1.3rem; width: 30px; text-align: center; }
+
+        /* المحتوى الرئيسي */
+        .main-content { margin-right: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; align-items: center; transition: var(--transition); min-height: 100vh; position: relative; }
+        .mobile-header { display: none; width: 100%; padding: 15px 20px; align-items: center; justify-content: space-between; background: var(--bg-main); position: sticky; top: 0; z-index: 1500; border-bottom: 1px solid #e9e1d400; }
+        .menu-toggle { background: var(--surface); border: 1px solid var(--border-light); font-size: 1.4rem; color: var(--text-main); cursor: pointer; width: 45px; height: 45px; border-radius: 14px; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
+        .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(4px); z-index: 1900; opacity: 0; visibility: hidden; transition: var(--transition); }
+        .overlay.open { opacity: 1; visibility: visible; }
+
+        /* تصميم صفحة "من نحن" بنظام Bento Grid الحديث */
+        .about-wrapper {
+            width: 100%;
+            max-width: 900px;
+            padding: 40px 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* الكروت الزجاجية العامة */
+        .glass-card {
+            background: var(--surface-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-md);
+            padding: 35px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card:hover {
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(184, 134, 11, 0.3);
+        }
+
+        /* كارت التطبيق الرئيسي */
+        .app-hero-card {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .app-hero-card::before {
+            content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+            width: 300px; height: 300px; background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+            z-index: -1; opacity: 0.6; border-radius: 50%;
+        }
+
+        .hero-icon-wrapper {
+            width: 100px; height: 100px;
+            background: linear-gradient(135deg, #ffffff, #fef9f0);
+            border-radius: 28px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3.5rem; color: var(--primary);
+            box-shadow: 0 15px 35px -10px rgba(184, 134, 11, 0.4);
+            margin-bottom: 25px;
+            border: 2px solid rgba(184, 134, 11, 0.2);
+            position: relative;
+        }
+        
+        .app-title { font-family: 'Amiri Quran', serif; font-size: 3rem; color: var(--primary-dark); line-height: 1.8; margin-bottom: 10px; }
+        .app-version { background: var(--bg-main); color: var(--primary-dark); padding: 5px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: 700; border: 1px solid var(--border-light); margin-bottom: 25px; letter-spacing: 1px; }
+        .app-desc { color: var(--text-muted); font-size: 1.15rem; line-height: 1.8; max-width: 650px; margin: 0 auto; font-weight: 500; }
+
+        /* شبكة الكروت السفلية */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        /* كارت المطور */
+        .dev-card {
+            grid-column: span 2;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            background: linear-gradient(to left, var(--surface-glass), #ffffff);
+            padding: 30px;
+        }
+        .dev-avatar {
+            width: 80px; height: 80px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem;
+            box-shadow: 0 10px 20px -5px rgba(184, 134, 11, 0.4);
+            flex-shrink: 0;
+            transform: rotate(-5deg);
+            transition: var(--transition);
+        }
+        .dev-card:hover .dev-avatar { transform: rotate(0deg) scale(1.05); }
+        
+        .dev-info { flex: 1; }
+        .dev-role { font-size: 0.9rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .dev-name { font-size: 1.8rem; font-weight: 800; color: var(--text-main); line-height: 1.2; margin-bottom: 8px; }
+        .dev-name span { color: #000000; font-weight: 600; font-size: 1.1rem; margin-right: 0px; }
+        .dev-bio { color: var(--text-muted); font-size: 1rem; line-height: 1.6; }
+        
+        .dev-links { display: flex; gap: 12px; margin-top: 15px; }
+        .dev-link { width: 38px; height: 38px; border-radius: 12px; background: var(--bg-main); display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 1.1rem; text-decoration: none; border: 1px solid var(--border-light); transition: var(--transition); }
+        .dev-link:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-3px); }
+
+        /* كروت الأهداف والتواصل */
+        .mini-card { padding: 25px; display: flex; flex-direction: column; justify-content: center; }
+        .mini-card i { font-size: 2rem; color: var(--primary); margin-bottom: 15px; }
+        .mini-card h3 { font-size: 1.3rem; color: var(--primary-dark); margin-bottom: 10px; font-weight: 800; }
+        .mini-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
+
+        /* ========== قسم التحميل (بعد التحسين) ========== */
+        .download-card {
+            grid-column: span 2;
+            text-align: center;
+            background: linear-gradient(145deg, #ffffff, #faf3e8);
+            border: 2px solid rgba(184, 134, 11, 0.2);
+            padding: 35px 25px;
+        }
+        .download-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+        .download-card p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+        /* زر PWA */
+        .store-btn.pwa {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: var(--primary);
+            color: var(--text-main);
+            padding: 16px 40px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+            margin: 0 auto;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .store-btn.pwa:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            background: var(--primary-dark);
+            color: white;
+        }
+        .store-btn.pwa i { font-size: 1.5rem; }
+
+        .footer-text { text-align: center; color: #9aa7b3; font-size: 0.9rem; margin-top: 10px; font-weight: 600; }
+
+        /* التجاوب مع الجوال */
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(100%); box-shadow: -10px 0 40px rgba(0,0,0,0.1); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-right: 0; }
+            .mobile-header { display: flex; }
+            
+            .bento-grid { grid-template-columns: 1fr; }
+            .dev-card { grid-column: span 1; flex-direction: column; text-align: center; padding: 25px 20px; }
+            .dev-avatar { margin-bottom: 10px; transform: rotate(0); }
+            .dev-links { justify-content: center; }
+            .app-title { font-size: 2.5rem; }
+            .download-card { grid-column: span 1; }
+            .store-btn.pwa { width: 100%; max-width: 280px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo"><i class="fa-solid fa-bahai"></i> تسبيحات</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-fingerprint"></i> المُسَبِّحَة</a>
+            <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
+            <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-open"></i> المصحف الشريف</a>
+            <a href="radio.html" class="nav-item"><i class="fa-solid fa-radio"></i>إذاعة القرآن الكريم</a>
+            <a href="prayer.html" class="nav-item"><i class="fa-solid fa-mosque"></i> مواقيت الصلاة</a>
+            <a href="about.html" class="nav-item active"><i class="fa-solid fa-circle-info"></i> من نحن</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="mobile-header">
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--primary-dark);">من نحن</h2>
+            <button class="menu-toggle" onclick="toggleMenu()"><i class="fa-solid fa-bars-staggered"></i></button>
+        </div>
+
+        <section class="about-wrapper">
+            
+            <div class="glass-card app-hero-card">
+                <div class="hero-icon-wrapper">
+                    <i class="fa-solid fa-kaaba"></i>
+                </div>
+                <h1 class="app-title">تسبيحات</h1>
+                <div class="app-version">Version 1.0.0</div>
+                <p class="app-desc">
+                    تطبيق إسلامي شامل صُمم بعناية ليكون رفيقك اليومي. يوفر لك مسبحة ذكية، أذكار الصباح والمساء، ومواقيت الصلاة، في واجهة عصرية خالية تماماً من المشتتات.
+                </p>
+            </div>
+
+            <div class="bento-grid">
+                
+                <div class="glass-card mini-card">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <h3>رسالتنا</h3>
+                    <p>نسعى لتوفير بيئة رقمية هادئة تُعين المسلم على ذكر اللَّه في كل وقت وحين، بعيداً عن صخب التكنولوجيا وإعلاناتها المزعجة، ليكون هذا العمل صدقة جارية.</p>
+                </div>
+
+                <div class="glass-card mini-card">
+                    <i class="fa-solid fa-star-half-stroke"></i>
+                    <h3>دعم التطبيق</h3>
+                    <p>رأيك يهمنا جداً في تطوير التطبيق. إذا أعجبك "تسبيحات"، لا تتردد في مشاركته مع من تحب وتقييمه، فالدال على الخير كفاعله.</p>
+                </div>
+
+                <div class="glass-card dev-card">
+                    <div class="dev-info">
+                        <div class="dev-role">تطوير وإعداد</div>
+                        <h2 class="dev-name"><span dir="ltr">@Abdelrahman Mohamed</span></h2>
+                    </div>
+                </div>
+
+                <!-- ========== قسم التحميل (معدل حسب الطلب) ========== -->
+                <div class="glass-card download-card">
+                    <div class="download-title">
+                        <i class="fa-solid fa-download" style="margin-left: 8px;"></i>
+                        نزِّل التطبيق الآن
+                    </div>
+                    <p>استمتع بتجربة أسرع وتصفح دون إنترنت</p>
+                    
+                    <!-- زر تثبيت PWA (يظهر إذا كان مدعوماً) -->
+                    <button id="installPWA" class="store-btn pwa" style="display: none;">
+                        <i class="fa-solid fa-rocket"></i>
+                        <span>تثبيت التطبيق</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="footer-text">
+                &copy; 2026 جميع الحقوق محفوظة Tasbeehat
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        function toggleMenu() { 
+            document.getElementById('sidebar').classList.toggle('open'); 
+            document.getElementById('overlay').classList.toggle('open'); 
+        }
+
+        // -------------------- PWA Install Prompt --------------------
+        let deferredPrompt;
+        const installButton = document.getElementById('installPWA');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installButton.style.display = 'inline-flex'; // إظهار الزر
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                console.log('تم تثبيت التطبيق');
+            }
+            deferredPrompt = null;
+            installButton.style.display = 'none';
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installButton.style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed'));
+            });
+        }
+
+            // ... كوداتك الحالية (toggleMenu و PWA) ...
+
+    // ========== كود إعادة التعيين إلى الإعدادات الأصلية عند الساعة 12 ==========
+    (function() {
+        // دالة لمحاكاة إعادة التعيين (هنا ستضع ما تريد إعادة تعيينه)
+        function performFactoryReset() {
+            console.log('تم تنفيذ إعادة التعيين إلى الإعدادات الأصلية!');
+            
+            // مثال: مسح كل البيانات المخزنة في localStorage
+            localStorage.clear();
+            
+            // مثال: إعادة تعيين عناصر محددة في localStorage
+            // localStorage.setItem('theme', 'light');
+            // localStorage.setItem('counter', '0');
+            
+            // مثال: إعادة تعيين متغيرات في التطبيق إذا كانت موجودة
+            // tasbeehCounter = 0; // مثال إذا كان لديك عداد تسبيح
+            
+            // يمكنك إظهار رسالة للمستخدم (اختياري)
+            alert('تمت إعادة تعيين إعدادات التطبيق إلى الوضع الافتراضي.');
+            
+            // اختياري: إعادة تحميل الصفحة لتطبيق الإعدادات الجديدة
+            // window.location.reload(); 
+        }
+
+        // دالة لمراجعة الوقت الحالي
+        function checkTimeAndReset() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+
+            // التحقق إذا كانت الساعة 12:00 ظهراً (12:00 PM) أو 12:00 منتصف الليل (00:00)
+            // hours == 12 تعني 12 ظهراً، hours == 0 تعني 12 منتصف الليل
+            if ((hours === 12 || hours === 0) && minutes === 0) {
+                performFactoryReset();
+            }
+        }
+
+        // 1. ننفذ الدالة مرة واحدة عند تحميل الصفحة للتأكد
+        checkTimeAndReset();
+
+        // 2. نضبط مؤقتاً لتنفيذ الدالة كل دقيقة (60000 ميلي ثانية)
+        // هذا أفضل من كل ثانية لتوفير أداء أفضل
+        setInterval(checkTimeAndReset, 60000); // 60000ms = 1 دقيقة
+
+    })(); // هذا يعني أن الدالة ستعمل تلقائياً عند تحميل الصفحة
+    // ========== نهاية الكود ==========
+    </script>
+</body>
+</html>
